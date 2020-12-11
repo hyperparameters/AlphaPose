@@ -33,6 +33,10 @@ class DetectionLoader():
             self.frameSize = (int(stream.get(cv2.CAP_PROP_FRAME_WIDTH)), int(stream.get(cv2.CAP_PROP_FRAME_HEIGHT)))
             self.videoinfo = {'fourcc': self.fourcc, 'fps': self.fps, 'frameSize': self.frameSize}
             stream.release()
+        elif mode == 'array':
+            self.imglist = []
+            self.datalen = 1 #len(input_source)
+            
 
         self.detector = detector
         self.batchSize = batchSize
@@ -97,6 +101,14 @@ class DetectionLoader():
     def stop(self):
         # clear queues
         self.clear_queues()
+        
+    def run(self, image):
+        self.imglist = [image]
+        self.image_preprocess()
+        self.image_detection()
+        self.image_postprocess()
+        out = self.pose_queue.get()
+        return out
 
     def terminate(self):
         if self.opt.sp:
@@ -121,6 +133,7 @@ class DetectionLoader():
         return queue.get()
 
     def image_preprocess(self):
+        print(self.num_batches)
         for i in range(self.num_batches):
             imgs = []
             orig_imgs = []
@@ -139,12 +152,20 @@ class DetectionLoader():
                 # add one dimension at the front for batch if image shape (3,h,w)
                 if img_k.dim() == 3:
                     img_k = img_k.unsqueeze(0)
-                orig_img_k = cv2.cvtColor(cv2.imread(im_name_k), cv2.COLOR_BGR2RGB) # scipy.misc.imread(im_name_k, mode='RGB') is depreciated
+                if isinstance(im_name_k,str):
+                    orig_img_k = cv2.cvtColor(cv2.imread(im_name_k), cv2.COLOR_BGR2RGB) # scipy.misc.imread(im_name_k, mode='RGB') is depreciated
+                    im_names.append(os.path.basename(im_name_k))
+                else:
+                    orig_img_k = im_name_k
+                    im_names.append("")
+                    
+                    
                 im_dim_list_k = orig_img_k.shape[1], orig_img_k.shape[0]
 
                 imgs.append(img_k)
-                orig_imgs.append(orig_img_k)
-                im_names.append(os.path.basename(im_name_k))
+                print("detector",orig_img_k.shape)
+                
+                orig_imgs.append(orig_img_k)                    
                 im_dim_list.append(im_dim_list_k)
 
             with torch.no_grad():

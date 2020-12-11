@@ -54,6 +54,7 @@ class YOLODetector(BaseDetector):
             if len(args.gpus) > 1:
                 self.model = torch.nn.DataParallel(self.model, device_ids=args.gpus).to(args.device)
             else:
+                print(args.device)
                 self.model.to(args.device)
         else:
             self.model.cuda()
