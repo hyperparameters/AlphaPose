@@ -14,6 +14,7 @@ from alphapose.models import builder
 
 class DetectionLoader():
     def __init__(self, input_source, detector, cfg, opt, mode='image', batchSize=1, queueSize=128):
+        
         self.cfg = cfg
         self.opt = opt
         self.mode = mode
@@ -133,7 +134,6 @@ class DetectionLoader():
         return queue.get()
 
     def image_preprocess(self):
-        print(self.num_batches)
         for i in range(self.num_batches):
             imgs = []
             orig_imgs = []
@@ -163,7 +163,7 @@ class DetectionLoader():
                 im_dim_list_k = orig_img_k.shape[1], orig_img_k.shape[0]
 
                 imgs.append(img_k)
-                print("detector",orig_img_k.shape)
+#                 print("detector",orig_img_k.shape)
                 
                 orig_imgs.append(orig_img_k)                    
                 im_dim_list.append(im_dim_list_k)
